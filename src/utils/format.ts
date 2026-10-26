@@ -45,6 +45,35 @@ export function plural(count: number, forms: readonly [string, string, string]):
   return forms[2];
 }
 
+/** Промилле с двумя знаками: «0,73 ‰». */
+export function formatPerMille(value: number): string {
+  if (!Number.isFinite(value)) return '—';
+  return `${twoDigitFormatter.format(value)} ‰`;
+}
+
+/** Длительность: 200 → «3 ч 20 мин», 45 → «45 мин». */
+export function formatMinutesSpan(minutes: number): string {
+  if (!Number.isFinite(minutes)) return '—';
+  const total = Math.max(0, Math.round(minutes));
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  if (hours === 0) return `${rest} мин`;
+  if (rest === 0) return `${hours} ч`;
+  return `${hours} ч ${rest} мин`;
+}
+
+/** Время по часам устройства: смещение в минутах от опорного момента. */
+export function formatClockAt(base: Date, offsetMinutes: number): string {
+  if (!Number.isFinite(offsetMinutes)) return '—';
+  const date = new Date(base.getTime() + Math.round(offsetMinutes) * 60_000);
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+/** Текущее время по системным часам устройства: «20:41». */
+export function formatClockNow(date: Date): string {
+  return formatClockAt(date, 0);
+}
+
 export function formatDateTime(date: Date): string {
   return new Intl.DateTimeFormat('ru-RU', {
     day: '2-digit',

@@ -65,3 +65,38 @@ export interface ToastMessage {
   text: string;
   tone: 'info' | 'success' | 'error';
 }
+
+/* ============================================================
+   Кровь: параметры человека, еды и времени
+   ============================================================ */
+
+/** Пол — только параметр модели распределения алкоголя. */
+export type BiologicalSex = 'male' | 'female';
+
+/** Сколько и как плотно человек ел. Влияет только на скорость всасывания. */
+export type FoodLevel = 'none' | 'light' | 'normal' | 'heavy';
+
+/** Когда была еда относительно употребления. */
+export type FoodTiming = 'before' | 'during' | 'after';
+
+/** Фаза расчётной кривой в момент расчёта. */
+export type BacPhase = 'rising' | 'peak' | 'falling' | 'sober';
+
+/**
+ * Сырые значения полей блока «А ЧЁ У МЕНЯ ТАМ ПО КРОВИ?».
+ * Числовые поля хранятся строками, как в форме напитков: пользователь может
+ * набирать «70,5» с запятой, а валидация приводит значение к числу.
+ */
+export interface BloodDraft {
+  sex: BiologicalSex;
+  weight: string;
+  height: string;
+  /** «HH:MM» — первый напиток. */
+  startTime: string;
+  /** «HH:MM» — последний напиток. Пусто — считаем, что всё выпито в начале. */
+  endTime: string;
+  foodLevel: FoodLevel;
+  foodTiming: FoodTiming;
+  /** Минуты; смысл зависит от foodTiming. */
+  foodOffset: string;
+}

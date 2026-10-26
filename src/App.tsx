@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BloodPanel } from './components/BloodPanel';
+import { BloodResult } from './components/BloodResult';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { Converter } from './components/Converter';
 import { DrinkForm } from './components/DrinkForm';
@@ -16,12 +18,14 @@ import { VerdictCard } from './components/VerdictCard';
 import { MAX_ENTRIES, getCategory } from './data/drinks';
 import { SAFETY_WARNING_FROM_ML } from './data/verdicts';
 import type {
+  BloodDraft,
   DrinkCategoryId,
   DrinkDraft,
   DrinkEntry,
   ToastMessage,
 } from './types';
 import { computeTotals, equivalentVolumeMl } from './utils/alcohol';
+import { applyCurrentTime, computeBloodAlcohol, validateBloodDraft } from './utils/bac';
 import type { MemeCardData } from './utils/memeImage';
 import { createEntryId, loadState, saveState } from './utils/storage';
 import { validateStrength } from './utils/validation';
@@ -30,6 +34,10 @@ import { matchLevel, resolveVerdict } from './utils/verdict';
 export default function App() {
   const [initialState] = useState(loadState);
   const [entries, setEntries] = useState<DrinkEntry[]>(initialState.entries);
+  const [bloodDraft, setBloodDraft] = useState<BloodDraft>(initialState.blood);
+  const [bloodRevealed, setBloodRevealed] = useState(false);
+  const [bloodSeed, setBloodSeed] = useState(0);
+  const [now, setNow] = useState(() => new Date());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [equivalentCategoryId, setEquivalentCategoryId] = useState<DrinkCategoryId>(
     initialState.equivalentCategoryId,
@@ -57,15 +65,22 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    saveState({ entries, equivalentCategoryId, equivalentStrength });
-  }, [entries, equivalentCategoryId, equivalentStrength]);
+    saveState({ entries, equivalentCategoryId, equivalentStrength, blood: bloodDraft });
+  }, [entries, equivalentCategoryId, equivalentStrength, bloodDraft]);
 
   useEffect(() => {
     if (entries.length === 0) {
       setRevealed(false);
       setMemeOpen(false);
+      setBloodRevealed(false);
     }
   }, [entries.length]);
+
+  // Расчёт живёт вместе с системными часами: время идёт, кривая тоже.
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (scrollTick === 0 || !revealed) return;
@@ -91,6 +106,19 @@ export default function App() {
     [totals.ethanolMl, seed],
   );
   const highIntake = totals.ethanolMl >= SAFETY_WARNING_FROM_ML;
+
+  const bloodValidation = useMemo(() => validateBloodDraft(bloodDraft, now), [bloodDraft, now]);
+  const bloodErrors = bloodValidation.ok ? {} : bloodValidation.errors;
+  const bloodDuration = bloodValidation.ok ? bloodValidation.window.durationMinutes : null;
+  const bloodResult = useMemo(() => {
+    if (!bloodRevealed || !bloodValidation.ok || entries.length === 0) return null;
+    return computeBloodAlcohol({
+      entries,
+      profile: bloodValidation.profile,
+      window: bloodValidation.window,
+      now,
+    });
+  }, [bloodRevealed, bloodValidation, entries, now]);
 
   const memeData = useMemo<MemeCardData | null>(() => {
     if (!revealed || entries.length === 0) return null;
@@ -162,6 +190,31 @@ export default function App() {
   const handleEquivalentCategory = (categoryId: DrinkCategoryId) => {
     setEquivalentCategoryId(categoryId);
     setEquivalentStrength(String(getCategory(categoryId).defaultStrength).replace('.', ','));
+  };
+
+  const handleBloodPatch = (patch: Partial<BloodDraft>) => {
+    setBloodDraft((previous) => ({ ...previous, ...patch }));
+  };
+
+  const handleBloodUseNow = () => {
+    const currentTime = new Date();
+    setNow(currentTime);
+    setBloodDraft((previous) => applyCurrentTime(previous, currentTime));
+    notify('Время взято с системных часов устройства.', 'success');
+  };
+
+  const handleBloodCalculate = () => {
+    if (entries.length === 0) {
+      notify('Сначала добавь хотя бы один напиток в разделе 01.', 'error');
+      return;
+    }
+    if (!bloodValidation.ok) {
+      notify('Проверь поля блока крови: там есть ошибки.', 'error');
+      return;
+    }
+    setNow(new Date());
+    setBloodSeed((previous) => previous + 1);
+    setBloodRevealed(true);
   };
 
   const closeMeme = useCallback(() => setMemeOpen(false), []);
@@ -256,6 +309,49 @@ export default function App() {
           )}
         </section>
 
+        <section className="section blood-section" id="blood" aria-labelledby="blood-title">
+          <SectionHeading
+            index="03"
+            title="А ЧЁ У МЕНЯ ТАМ ПО КРОВИ?"
+            hint="Приблизительная оценка по модели Видмарка с задержкой всасывания: сколько этанола в крови прямо сейчас, куда идёт расчётная кривая и когда модель покажет ноль."
+            id="blood-title"
+          />
+
+          <div className="blood-workspace">
+            <BloodPanel
+              draft={bloodDraft}
+              errors={bloodErrors}
+              now={now}
+              durationMinutes={bloodDuration}
+              entriesCount={entries.length}
+              calculated={bloodResult !== null}
+              onPatch={handleBloodPatch}
+              onUseNow={handleBloodUseNow}
+              onCalculate={handleBloodCalculate}
+            />
+
+            {bloodResult ? (
+              <BloodResult result={bloodResult} seed={bloodSeed} />
+            ) : (
+              <div className="panel blood-placeholder">
+                <span className="blood-placeholder-emoji" aria-hidden="true">
+                  🩸
+                </span>
+                <div>
+                  <h3>
+                    {entries.length === 0 ? 'Сначала напитки' : 'Нажми кнопку — покажу сценарий'}
+                  </h3>
+                  <p>
+                    {entries.length === 0
+                      ? 'В списке пока пусто. Добавь напитки в разделе 01 — и модель посчитает, что там у тебя по крови.'
+                      : 'Здесь появится расчётная концентрация в ‰, диапазон модели, стадия кривой, график на ближайшие часы и ориентировочное время до нуля. Это сценарий по модели, а не измерение.'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
         {revealed && entries.length > 0 ? (
           <section
             className="section result-section"
@@ -263,7 +359,7 @@ export default function App() {
             aria-labelledby="result-title"
           >
             <SectionHeading
-              index="03"
+              index="04"
               title="Твой вердикт"
               hint={
                 matchedLevel

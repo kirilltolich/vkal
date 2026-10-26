@@ -2668,3 +2668,663 @@ input[aria-invalid='true'] {
     animation: none;
   }
 }
+
+/* ============================================================
+   Блок «А ЧЁ У МЕНЯ ТАМ ПО КРОВИ?»
+   ============================================================ */
+
+.blood-workspace {
+  display: grid;
+  gap: 20px;
+}
+
+.blood-badge {
+  flex: none;
+  padding: 4px 9px;
+  border: 1px solid rgba(255, 61, 139, 0.35);
+  border-radius: 999px;
+  color: var(--pink);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.blood-fieldset {
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+}
+
+.blood-fieldset legend {
+  margin-bottom: 8px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 15px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--soft);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition:
+    color 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.chip:hover {
+  border-color: var(--lime);
+  color: var(--ink);
+}
+
+.chip.is-active {
+  border-color: var(--lime);
+  background: rgba(198, 255, 46, 0.1);
+  color: var(--lime);
+}
+
+.chip-small {
+  min-height: 34px;
+  padding: 6px 11px;
+  font-size: 11.5px;
+}
+
+.field-optional {
+  color: #6f747d;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.blood-time-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.now-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: #0a0c0f;
+}
+
+.now-display strong {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.now-display .text-button {
+  padding: 4px 0;
+}
+
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.food-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-height: 118px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--soft);
+  text-align: left;
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+
+.food-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+}
+
+.food-card.is-active {
+  border-color: var(--food-accent, var(--lime));
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--food-accent, var(--lime));
+}
+
+.food-card-emoji {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.food-card-label {
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.food-card-hint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.blood-joke {
+  margin: 12px 0 0;
+  padding: 9px 12px;
+  border-left: 3px solid rgba(255, 61, 139, 0.5);
+  border-radius: 0 10px 10px 0;
+  background: rgba(255, 61, 139, 0.06);
+  color: #e2c3cf;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.blood-food-timing {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.button-blood {
+  width: 100%;
+  min-height: 66px;
+  padding: 14px 28px;
+  border: 0;
+  border-radius: 18px;
+  background: linear-gradient(100deg, var(--pink), var(--violet));
+  color: #180410;
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.9vw, 18px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  box-shadow: 0 16px 40px rgba(255, 61, 139, 0.2);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.button-blood span {
+  font-size: 1.15em;
+}
+
+.button-blood:hover:not(:disabled) {
+  transform: translateY(-2px) rotate(0.35deg);
+  box-shadow: 0 22px 52px rgba(255, 61, 139, 0.3);
+  filter: brightness(1.04);
+}
+
+.blood-bar {
+  margin-top: 18px;
+}
+
+/* ---------- Заглушка до расчёта ---------- */
+
+.blood-placeholder {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border-style: dashed;
+  border-color: rgba(255, 61, 139, 0.28);
+}
+
+.blood-placeholder-emoji {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.blood-placeholder h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: -0.03em;
+}
+
+.blood-placeholder p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ---------- Результат ---------- */
+
+.blood-result {
+  position: relative;
+  overflow: hidden;
+}
+
+.blood-result::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--pink), var(--violet), var(--lime));
+}
+
+.blood-phase {
+  flex: none;
+  max-width: 260px;
+  padding: 5px 11px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.blood-phase-rising {
+  color: var(--yellow);
+}
+
+.blood-phase-peak {
+  color: var(--orange);
+}
+
+.blood-phase-falling {
+  color: #7ad7ff;
+}
+
+.blood-phase-sober {
+  color: var(--muted);
+}
+
+.blood-headline {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 3vw, 22px);
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+}
+
+.blood-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  color: var(--phase-accent, var(--lime));
+}
+
+.blood-value-number {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 8vw, 72px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}
+
+.blood-value-unit {
+  margin-top: 4px;
+  font-family: var(--font-display);
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight: 700;
+}
+
+.blood-value-side {
+  min-width: 0;
+}
+
+.blood-value-label {
+  margin: 0;
+  color: var(--soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.blood-range {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.blood-range-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.blood-phrase {
+  margin: 14px 0 0;
+  color: var(--soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.blood-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.blood-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.blood-stat-wide {
+  border-color: rgba(255, 61, 139, 0.25);
+}
+
+.blood-stat-label {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.blood-stat-value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.blood-stat-value small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.blood-stat-sub {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* ---------- График ---------- */
+
+.blood-chart {
+  margin: 18px 0 0;
+}
+
+.blood-chart-svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.blood-grid-line {
+  stroke: rgba(255, 255, 255, 0.09);
+  stroke-width: 1;
+}
+
+.blood-grid-line-vertical {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-dasharray: 4 6;
+}
+
+.blood-axis-text {
+  fill: #8f949c;
+  font-family: var(--font-body);
+}
+
+.blood-axis-title {
+  fill: #6f747d;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.blood-line {
+  fill: none;
+  stroke: var(--lime);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.blood-line-future {
+  stroke: rgba(198, 255, 46, 0.5);
+  stroke-width: 2.5;
+  stroke-dasharray: 9 7;
+}
+
+.blood-marker line {
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+.blood-marker-now line {
+  stroke: var(--pink);
+}
+
+.blood-marker-now circle {
+  fill: var(--pink);
+  stroke: #07080a;
+  stroke-width: 3;
+}
+
+.blood-marker-peak line {
+  stroke: var(--orange);
+  opacity: 0.7;
+}
+
+.blood-marker-peak circle {
+  fill: var(--orange);
+  stroke: #07080a;
+  stroke-width: 2.5;
+}
+
+.blood-marker-text {
+  fill: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+.blood-marker-peak .blood-marker-text {
+  fill: var(--orange);
+}
+
+.blood-marker-now .blood-marker-text {
+  fill: var(--pink);
+}
+
+.blood-chart-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.blood-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.blood-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--soft);
+  font-size: 11px;
+}
+
+.blood-legend-line {
+  width: 22px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--lime);
+}
+
+.blood-legend-line-future {
+  background: rgba(198, 255, 46, 0.5);
+}
+
+.blood-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pink);
+}
+
+/* ---------- Фаза, допущения, предупреждения ---------- */
+
+.blood-phase-card {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--phase-accent, var(--lime));
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.blood-phase-card strong {
+  display: block;
+  color: var(--phase-accent, var(--lime));
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: -0.03em;
+}
+
+.blood-phase-card p {
+  margin: 8px 0 0;
+  color: var(--soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.blood-phase-card p.blood-phase-note {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.blood-alert {
+  margin-top: 18px;
+}
+
+.blood-assumptions {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.blood-assumption-list {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+}
+
+.blood-assumption-list li {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.blood-disclaimer {
+  margin: 16px 0 0;
+  color: #ffb3c1;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .food-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .blood-food-timing {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .blood-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .blood-time-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .blood-headline {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .blood-phase {
+    max-width: none;
+    text-align: left;
+  }
+
+  .blood-value-number {
+    font-size: 54px;
+  }
+
+  .food-card {
+    min-height: 0;
+  }
+
+  .button-blood {
+    min-height: 62px;
+    padding: 12px 18px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .food-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .blood-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chip {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
