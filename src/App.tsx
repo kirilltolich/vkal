@@ -8,8 +8,10 @@ import { DrinkList } from './components/DrinkList';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { MemeCardModal } from './components/MemeCardModal';
+import { ParticipantField } from './components/ParticipantField';
 import { SafetyNotice } from './components/SafetyNotice';
 import { SectionHeading } from './components/SectionHeading';
+import { ShareBlock } from './components/ShareBlock';
 import { StartState } from './components/StartState';
 import { Summary } from './components/Summary';
 import { Ticker } from './components/Ticker';
@@ -27,6 +29,7 @@ import type {
 import { computeTotals, equivalentVolumeMl } from './utils/alcohol';
 import { applyCurrentTime, computeBloodAlcohol, validateBloodDraft } from './utils/bac';
 import type { MemeCardData } from './utils/memeImage';
+import { sanitizeName } from './utils/participant';
 import { createEntryId, loadState, saveState } from './utils/storage';
 import { validateStrength } from './utils/validation';
 import { matchLevel, resolveVerdict } from './utils/verdict';
@@ -34,6 +37,7 @@ import { matchLevel, resolveVerdict } from './utils/verdict';
 export default function App() {
   const [initialState] = useState(loadState);
   const [entries, setEntries] = useState<DrinkEntry[]>(initialState.entries);
+  const [name, setName] = useState(initialState.name);
   const [bloodDraft, setBloodDraft] = useState<BloodDraft>(initialState.blood);
   const [bloodRevealed, setBloodRevealed] = useState(false);
   const [bloodSeed, setBloodSeed] = useState(0);
@@ -65,8 +69,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    saveState({ entries, equivalentCategoryId, equivalentStrength, blood: bloodDraft });
-  }, [entries, equivalentCategoryId, equivalentStrength, bloodDraft]);
+    saveState({ entries, equivalentCategoryId, equivalentStrength, blood: bloodDraft, name });
+  }, [entries, equivalentCategoryId, equivalentStrength, bloodDraft, name]);
 
   useEffect(() => {
     if (entries.length === 0) {
@@ -88,6 +92,8 @@ export default function App() {
   }, [scrollTick, revealed]);
 
   const totals = useMemo(() => computeTotals(entries), [entries]);
+  // Имя показываем уже нормализованным: без пробелов по краям и с лимитом длины.
+  const participantName = useMemo(() => sanitizeName(name), [name]);
   const editingEntry = editingId
     ? entries.find((entry) => entry.id === editingId) ?? null
     : null;
@@ -123,6 +129,7 @@ export default function App() {
   const memeData = useMemo<MemeCardData | null>(() => {
     if (!revealed || entries.length === 0) return null;
     return {
+      name: participantName,
       levelName: verdict.name,
       levelIndex: verdict.displayIndex,
       tagline: verdict.tagline,
@@ -144,6 +151,7 @@ export default function App() {
     equivalentMl,
     equivalentCategory.label,
     equivalentValue,
+    participantName,
   ]);
 
   const handleAdd = (draft: DrinkDraft) => {
@@ -287,6 +295,8 @@ export default function App() {
 
               {highIntake ? <SafetyNotice /> : null}
 
+              <ParticipantField value={name} onChange={setName} />
+
               <div className="calculate-bar">
                 <div className="calculate-copy">
                   <span className="calculate-eyebrow">
@@ -375,8 +385,11 @@ export default function App() {
               equivalentMl={equivalentMl}
               equivalentLabel={equivalentCategory.label}
               equivalentStrength={equivalentValue}
+              name={participantName}
               onMeme={() => setMemeOpen(true)}
             />
+
+            {memeData ? <ShareBlock data={memeData} notify={notify} /> : null}
           </section>
         ) : null}
       </main>
@@ -409,7 +422,7 @@ export default function App() {
       <ConfirmDialog
         open={clearOpen}
         title="Очистить весь список?"
-        description="Все добавленные напитки исчезнут, результат и вердикт тоже. Отменить это будет нельзя."
+        description="Все добавленные напитки исчезнут, результат и вердикт тоже. Имя участника останется — его можно стереть отдельно. Отменить это будет нельзя."
         confirmLabel="Да, очистить"
         cancelLabel="Оставить"
         onConfirm={handleClear}

@@ -9,6 +9,8 @@ interface VerdictCardProps {
   equivalentMl: number | null;
   equivalentLabel: string;
   equivalentStrength: number | null;
+  /** Имя участника; пустая строка — имени нет и подпись не показывается. */
+  name: string;
   onMeme: () => void;
 }
 
@@ -18,6 +20,7 @@ export function VerdictCard({
   equivalentMl,
   equivalentLabel,
   equivalentStrength,
+  name,
   onMeme,
 }: VerdictCardProps) {
   const levelLabel =
@@ -36,6 +39,12 @@ export function VerdictCard({
         <span className="verdict-level">{levelLabel}</span>
         <span className="verdict-tag">условная шкала · не диагноз</span>
       </header>
+
+      {name ? (
+        <p className="verdict-subject">
+          <span aria-hidden="true">🍻</span> подозреваемый: <strong>{name}</strong>
+        </p>
+      ) : null}
 
       <div className="verdict-title-row">
         <span className="verdict-emoji" aria-hidden="true">
@@ -83,7 +92,7 @@ export function VerdictCard({
 
       <div className="verdict-actions">
         <button type="button" className="button button-accent" onClick={onMeme}>
-          <span aria-hidden="true">🖼️</span> Сделать мем-карточку
+          <span aria-hidden="true">🖼️</span> Посмотреть мем-карточку
         </button>
         <p className="verdict-refresh">
           Цифры пересчитываются сами, если поменять список или крепость эквивалента.

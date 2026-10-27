@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { createMemeFileName, wrapText } from './memeImage';
+import { MEME_WIDTH, createMemeFileName, fitNameLine, wrapText } from './memeImage';
+
+/** 1080 − отступы 72×2 − внутренние отступы панели 104. */
+const NAME_MAX_WIDTH = MEME_WIDTH - 72 * 2 - 104;
 
 function fakeContext(charWidth = 10) {
   return {
@@ -49,5 +52,44 @@ describe('wrapText', () => {
 describe('createMemeFileName', () => {
   it('формирует имя PNG с датой', () => {
     expect(createMemeFileName(new Date(2026, 9, 25))).toBe('v-govno-2026-10-25.png');
+  });
+});
+
+describe('fitNameLine', () => {
+  it('короткое имя остаётся целиком и в верхнем регистре', () => {
+    const ctx = fakeContext(10);
+    const line = fitNameLine(ctx as never, 'Кирилл');
+
+    expect(line.text).toBe('КИРИЛЛ');
+    expect(line.size).toBe(40);
+  });
+
+  it('без имени не рисует пустую подпись', () => {
+    const ctx = fakeContext(10);
+    expect(fitNameLine(ctx as never, '')).toEqual({ text: '', size: 0 });
+    expect(fitNameLine(ctx as never, '   ')).toEqual({ text: '', size: 0 });
+    expect(fitNameLine(ctx as never, '🍻🍻')).toEqual({ text: '', size: 0 });
+  });
+
+  it('максимальное имя в 30 символов влезает в одну строку', () => {
+    const ctx = fakeContext(24);
+    const line = fitNameLine(ctx as never, 'Я'.repeat(30));
+
+    expect(line.text).toBe('Я'.repeat(30));
+    expect(line.text.length * 24).toBeLessThanOrEqual(NAME_MAX_WIDTH);
+  });
+
+  it('совсем невпихуемое имя обрезается с многоточием и не выходит за границы', () => {
+    const ctx = fakeContext(60);
+    const line = fitNameLine(ctx as never, 'Я'.repeat(30));
+
+    expect(line.text.endsWith('…')).toBe(true);
+    expect(line.size).toBe(22);
+    expect(line.text.length * 60).toBeLessThanOrEqual(NAME_MAX_WIDTH);
+  });
+
+  it('эмодзи и разметка не попадают на карточку', () => {
+    const ctx = fakeContext(10);
+    expect(fitNameLine(ctx as never, 'Кирилл 🍻 <b>').text).toBe('КИРИЛЛ B');
   });
 });

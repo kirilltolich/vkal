@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useModalBehavior } from '../hooks/useModalBehavior';
 import type { ToastMessage } from '../types';
-import { downloadMemeCard, shareMemeCard } from '../utils/download';
+import { downloadMemeCard, shareResult } from '../utils/download';
 import { renderMemeCardPng, type MemeCardData } from '../utils/memeImage';
+import { APP_URL, buildShareText, buildShareTitle } from '../utils/participant';
 
 interface MemeCardModalProps {
   open: boolean;
@@ -86,25 +87,29 @@ export function MemeCardModal({ open, data, onClose, notify }: MemeCardModalProp
   };
 
   const handleShare = async () => {
-    if (!blob || sharing) return;
+    if (sharing) return;
     setSharing(true);
     setShareHint(null);
     setNote(null);
 
     try {
-      const result = await shareMemeCard(blob, {
-        title: 'В ГОВНО — мой вердикт',
-        text: `${data.levelName}. ${data.phrase}`,
+      const result = await shareResult({
+        blob,
+        title: buildShareTitle(data.name),
+        text: buildShareText({ name: data.name, verdictName: data.levelName }),
+        url: APP_URL,
       });
 
       if (result.status === 'shared') {
-        setNote('Карточка отправлена через «Поделиться».');
-        notify('Карточка отправлена.', 'success');
+        setNote(
+          result.withFile
+            ? 'Меню «Поделиться» открыто: выбери, куда отправить карточку.'
+            : 'Меню открыто. Карточку этот браузер не пропускает, поэтому ушли текст и ссылка.',
+        );
       } else if (result.status === 'cancelled') {
         setNote('Отправку отменили. Карточка осталась здесь.');
       } else {
         setShareHint(`${result.reason} Кнопка «Скачать карточку» сохранит PNG на устройство.`);
-        notify(result.reason, 'error');
       }
     } finally {
       setSharing(false);
@@ -185,7 +190,7 @@ export function MemeCardModal({ open, data, onClose, notify }: MemeCardModalProp
               type="button"
               className="button button-ghost"
               onClick={handleShare}
-              disabled={status !== 'ready' || !blob || sharing}
+              disabled={status === 'rendering' || sharing}
             >
               <span aria-hidden="true">↗</span> {sharing ? 'Открываю…' : 'Поделиться'}
             </button>

@@ -22,44 +22,123 @@ export function downloadMemeCard(blob: Blob, date = new Date()): string {
 }
 
 export type ShareResult =
-  | { status: 'shared' }
+  /** Меню открылось. withFile — передали ли PNG, или только текст со ссылкой. */
+  | { status: 'shared'; withFile: boolean }
   | { status: 'cancelled' }
   | { status: 'unsupported'; reason: string }
   | { status: 'error'; reason: string };
 
-interface SharePayload {
+export interface SharePayload {
+  /** PNG-карточка; null — если рисовать нечего или не получилось. */
+  blob: Blob | null;
   title: string;
   text: string;
+  url?: string;
+}
+
+function makePngFile(blob: Blob): File {
+  return new File([blob], createMemeFileName(new Date()), { type: 'image/png' });
+}
+
+function hasShareApi(): boolean {
+  return typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+}
+
+/** Умеет ли этот браузер отдавать в «Поделиться» именно файл-картинку. */
+export function canSharePngFile(blob: Blob): boolean {
+  if (typeof navigator === 'undefined' || typeof navigator.canShare !== 'function') return false;
+  try {
+    return navigator.canShare({ files: [makePngFile(blob)] });
+  } catch {
+    return false;
+  }
 }
 
 /**
- * Пробует отправить сам PNG через Web Share API (Level 2).
- * Если браузер не умеет делиться файлами — возвращает unsupported,
- * чтобы интерфейс предложил скачивание.
+ * Открывает системное меню «Поделиться».
+ *
+ * Сначала пробуем отдать PNG вместе с текстом. Если браузер файлы не умеет,
+ * отдаём текст со ссылкой. Отмена меню — не ошибка, а обычный сценарий.
+ * «Меню открылось» не значит «сообщение отправлено»: отправку завершает
+ * пользователь уже в системном окне.
  */
-export async function shareMemeCard(blob: Blob, payload: SharePayload): Promise<ShareResult> {
-  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
-    return { status: 'unsupported', reason: 'Этот браузер не поддерживает системное «Поделиться».' };
+export async function shareResult({
+  blob,
+  title,
+  text,
+  url,
+}: SharePayload): Promise<ShareResult> {
+  if (!hasShareApi()) {
+    return {
+      status: 'unsupported',
+      reason: 'Этот браузер не умеет открывать системное «Поделиться».',
+    };
   }
 
-  const file = new File([blob], createMemeFileName(new Date()), { type: 'image/png' });
+  const file = blob && canSharePngFile(blob) ? makePngFile(blob) : null;
 
   try {
-    if (typeof navigator.canShare !== 'function' || !navigator.canShare({ files: [file] })) {
-      return {
-        status: 'unsupported',
-        reason: 'Браузер не умеет передавать файлы через «Поделиться». Скачай карточку — и отправляй вручную.',
-      };
+    if (file) {
+      await navigator.share({ files: [file], title, text });
+      return { status: 'shared', withFile: true };
     }
-    await navigator.share({ files: [file], title: payload.title, text: payload.text });
-    return { status: 'shared' };
+
+    await navigator.share(url ? { title, text, url } : { title, text });
+    return { status: 'shared', withFile: false };
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       return { status: 'cancelled' };
     }
     return {
       status: 'error',
-      reason: 'Не удалось открыть «Поделиться». Скачай PNG и отправь его сам.',
+      reason: 'Системное «Поделиться» не сработало. Скачай PNG или скопируй ссылку.',
     };
   }
+}
+
+export type CopyResult =
+  | { status: 'copied' }
+  /** Копирование не разрешено — покажем текст в поле для ручного копирования. */
+  | { status: 'manual'; reason: string };
+
+/** Старый способ на случай, когда Clipboard API недоступен (http, webview). */
+function copyWithTextarea(text: string): boolean {
+  if (typeof document === 'undefined') return false;
+  try {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.top = '-1000px';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    const copied = document.execCommand('copy');
+    area.remove();
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
+/** Копирует текст в буфер обмена; если браузер не дал — просит скопировать руками. */
+export async function copyText(text: string): Promise<CopyResult> {
+  const clipboard =
+    typeof navigator !== 'undefined' && navigator.clipboard ? navigator.clipboard : null;
+
+  if (clipboard && typeof clipboard.writeText === 'function') {
+    try {
+      await clipboard.writeText(text);
+      return { status: 'copied' };
+    } catch {
+      // Пробуем запасной способ ниже.
+    }
+  }
+
+  if (copyWithTextarea(text)) return { status: 'copied' };
+
+  return {
+    status: 'manual',
+    reason: 'Браузер не разрешил копировать сам. Скопируй ссылку из поля вручную.',
+  };
 }

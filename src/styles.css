@@ -3328,3 +3328,238 @@ input[aria-invalid='true'] {
   }
 }
 
+
+/* ============================================================
+   Имя участника и блок «Покажи друзьям»
+   ============================================================ */
+
+.participant-strip {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(14px, 2.4vw, 26px);
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding: clamp(16px, 2.6vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 60%),
+    var(--panel);
+  box-shadow: var(--shadow-panel);
+}
+
+.participant-copy {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.participant-label {
+  display: inline-block;
+  color: var(--lime);
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.9vw, 17px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+}
+
+.participant-copy p {
+  max-width: 520px;
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.participant-input {
+  flex: 0 1 330px;
+  min-width: 0;
+}
+
+.participant-input input {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.participant-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 7px;
+}
+
+.participant-counter {
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.participant-clear {
+  padding: 4px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.participant-clear:hover {
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+/* Кто именно получил вердикт. */
+.verdict-subject {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.verdict-subject strong {
+  min-width: 0;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: clamp(16px, 2.6vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  text-transform: none;
+  /* Длинное имя переносится, а не ломает карточку. */
+  overflow-wrap: anywhere;
+}
+
+.share-block {
+  margin-top: 22px;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(520px 220px at 0 0, rgba(198, 255, 46, 0.08), transparent 70%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 60%),
+    #0b0e12;
+}
+
+.share-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(17px, 2.5vw, 24px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.share-head p {
+  max-width: 660px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.share-actions .button {
+  flex: 1 1 230px;
+  min-height: 54px;
+  padding-inline: 18px;
+  text-align: center;
+}
+
+.share-message {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.share-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.share-text {
+  margin: 9px 0 0;
+  color: var(--soft);
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.share-manual {
+  display: block;
+  margin-top: 14px;
+}
+
+.share-manual span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.share-manual input {
+  font-size: 13px;
+}
+
+.share-note {
+  margin: 14px 0 0;
+  color: var(--lime);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.share-hint {
+  margin: 14px 0 0;
+  color: var(--yellow);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.share-fine {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .participant-input,
+  .participant-copy {
+    flex: 1 1 100%;
+  }
+
+  .share-actions .button {
+    flex: 1 1 100%;
+  }
+}

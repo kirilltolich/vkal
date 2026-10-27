@@ -1,4 +1,5 @@
 import { formatDateTime, formatEquivalentMl, formatMl, formatNumber } from './format';
+import { sanitizeName } from './participant';
 
 export const MEME_WIDTH = 1080;
 export const MEME_HEIGHT = 1350;
@@ -15,6 +16,8 @@ const DIM = '#5f646c';
 const PANEL = '#121419';
 
 export interface MemeCardData {
+  /** Имя участника; пустая строка — имени нет и подпись не рисуется. */
+  name: string;
   levelName: string;
   levelIndex: number | null;
   tagline: string;
@@ -345,13 +348,35 @@ function drawLevel(
   ctx.restore();
 }
 
-function drawPhrase(
+const NAME_FIT_OPTIONS: FitOptions = {
+  maxWidth: CONTENT_WIDTH - 104,
+  maxLines: 1,
+  startSize: 40,
+  minSize: 22,
+  weight: 800,
+  family: DISPLAY_FAMILY,
+};
+
+/**
+ * Строка с именем участника: всегда одна строка. Если имя не влезает,
+ * размер уменьшается, а в самом крайнем случае остаётся обрезка с «…» —
+ * за границы панели текст не выходит никогда.
+ */
+export function fitNameLine(
   ctx: CanvasRenderingContext2D,
-  phrase: string,
-  accent: string,
-): void {
+  name: string,
+): { text: string; size: number } {
+  const upper = sanitizeName(name).toUpperCase();
+  if (!upper) return { text: '', size: 0 };
+
+  const fit = fitText(ctx, upper, NAME_FIT_OPTIONS);
+  return { text: fit.lines[0] ?? upper, size: fit.size };
+}
+
+function drawPhrase(ctx: CanvasRenderingContext2D, data: MemeCardData, accent: string): void {
   const panelTop = 620;
   const panelHeight = 300;
+  const innerPad = 52;
 
   ctx.save();
   roundedRect(ctx, PAD, panelTop, CONTENT_WIDTH, panelHeight, 32);
@@ -365,22 +390,46 @@ function drawPhrase(
   ctx.fillStyle = accent;
   ctx.fill();
 
-  const fit = fitText(ctx, phrase, {
-    maxWidth: CONTENT_WIDTH - 104,
-    maxLines: 6,
+  // Кто именно попал: отдельная строка над вердиктом. Без имени панель
+  // выглядит ровно так же, как раньше.
+  const name = sanitizeName(data.name);
+  let areaTop = panelTop + 22;
+  const areaBottom = panelTop + panelHeight - 22;
+
+  if (name) {
+    ctx.font = `600 16px ${BODY_FAMILY}`;
+    ctx.fillStyle = MUTED;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('ПОДОЗРЕВАЕМЫЙ', PAD + innerPad, areaTop);
+
+    // Длинное имя уменьшается, а совсем длинное обрезается с многоточием,
+    // но никогда не выходит за панель.
+    const nameLine = fitNameLine(ctx, name);
+
+    ctx.font = `800 ${nameLine.size}px ${DISPLAY_FAMILY}`;
+    ctx.fillStyle = accent;
+    ctx.fillText(nameLine.text, PAD + innerPad, areaTop + 24);
+
+    areaTop += 24 + nameLine.size * 1.2 + 10;
+  }
+
+  const fit = fitText(ctx, data.phrase, {
+    maxWidth: CONTENT_WIDTH - innerPad * 2,
+    maxLines: name ? 4 : 6,
     startSize: 46,
-    minSize: 27,
+    minSize: name ? 24 : 27,
     weight: 700,
     family: DISPLAY_FAMILY,
     lineHeightRatio: 1.32,
   });
 
   const textHeight = fit.lines.length * fit.lineHeight;
-  const textTop = panelTop + (panelHeight - textHeight) / 2 - 2;
+  const textTop = areaTop + Math.max(0, (areaBottom - areaTop - textHeight) / 2);
 
   ctx.font = `700 ${fit.size}px ${DISPLAY_FAMILY}`;
   ctx.fillStyle = INK;
-  drawLines(ctx, fit.lines, PAD + 52, textTop, fit.lineHeight, 'left');
+  drawLines(ctx, fit.lines, PAD + innerPad, textTop, fit.lineHeight, 'left');
   ctx.restore();
 }
 
@@ -576,7 +625,7 @@ export async function renderMemeCardPng(data: MemeCardData): Promise<Blob> {
   drawBackground(ctx, accent);
   drawHeader(ctx, accent);
   drawLevel(ctx, data, accent);
-  drawPhrase(ctx, data.phrase, accent);
+  drawPhrase(ctx, data, accent);
   drawStats(ctx, data, accent);
   drawFooter(ctx, data);
 

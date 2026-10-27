@@ -1,6 +1,7 @@
 import { DRINK_CATEGORY_MAP, MAX_ENTRIES } from '../data/drinks';
 import type { BiologicalSex, BloodDraft, DrinkCategoryId, DrinkEntry, FoodLevel, FoodTiming } from '../types';
 import { createDefaultBloodDraft, parseClockTime } from './bac';
+import { sanitizeName } from './participant';
 
 const STORAGE_KEY = 'v-govno:state:v1';
 
@@ -9,6 +10,8 @@ export interface PersistedState {
   equivalentCategoryId: DrinkCategoryId;
   equivalentStrength: string;
   blood: BloodDraft;
+  /** Имя участника теста; пустая строка — имени нет. */
+  name: string;
 }
 
 /**
@@ -21,6 +24,7 @@ export function createDefaultPersistedState(now: Date = new Date()): PersistedSt
     equivalentCategoryId: 'vodka',
     equivalentStrength: '40',
     blood: createDefaultBloodDraft(now),
+    name: '',
   };
 }
 
@@ -162,6 +166,8 @@ export function loadState(now: Date = new Date()): PersistedState {
       equivalentCategoryId: categoryId,
       equivalentStrength: strength,
       blood: sanitizeBlood(candidate.blood, now),
+      // Старые сохранения без имени и любое испорченное значение → пустая строка.
+      name: sanitizeName(candidate.name),
     };
   } catch {
     return defaults;
